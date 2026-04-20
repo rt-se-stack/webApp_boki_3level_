@@ -149,7 +149,7 @@ export default function QuizClient() {
         </div>
 
         {!answered ? (
-          mode === 'choice' ? (
+          current.type === 'choice' ? (
             <ChoiceQuestion question={current} onAnswer={handleAnswer} />
           ) : (
             <JournalQuestion question={current} onAnswer={handleAnswer} />

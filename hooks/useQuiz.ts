@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import questionsData from '@/data/questions.json';
 import type { Question, Difficulty, QuizMode, JournalAnswer } from '@/types';
 
@@ -32,13 +32,13 @@ export function checkJournalAnswer(userAnswer: JournalAnswer, correct: JournalAn
 }
 
 export function useQuiz(categoryId: number, difficulty: Difficulty, mode: QuizMode) {
-  const questions = useMemo<Question[]>(() => {
+  const [questions] = useState<Question[]>(() => {
     const all = questionsData as Question[];
     const filtered = all.filter(
-      q => q.categoryId === categoryId && q.difficulty === difficulty && q.type === mode
+      q => q.categoryId === categoryId && q.difficulty === difficulty
     );
     return shuffle(filtered);
-  }, [categoryId, difficulty, mode]);
+  });
 
   const [index, setIndex] = useState(0);
   const [results, setResults] = useState<boolean[]>([]);
@@ -49,7 +49,7 @@ export function useQuiz(categoryId: number, difficulty: Difficulty, mode: QuizMo
   const submitAnswer = useCallback((answer: string | JournalAnswer) => {
     if (!current) return false;
     let correct = false;
-    if (mode === 'choice') {
+    if (current.type === 'choice') {
       correct = (answer as string) === current.answer;
     } else {
       correct = checkJournalAnswer(answer as JournalAnswer, current.journalAnswer!);
@@ -57,7 +57,7 @@ export function useQuiz(categoryId: number, difficulty: Difficulty, mode: QuizMo
     const newResults = [...results, correct];
     setResults(newResults);
     return correct;
-  }, [current, mode, results]);
+  }, [current, results]);
 
   const next = useCallback(() => {
     if (index + 1 >= questions.length) {

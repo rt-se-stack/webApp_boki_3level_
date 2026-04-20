@@ -148,7 +148,7 @@ export default function ResultsPage() {
                       <div className="text-xs text-gray-400">
                         {s.mode === 'choice' ? '選択式' : '仕訳式'} ·
                         {s.difficulty === 'low' ? ' 初級' : s.difficulty === 'medium' ? ' 中級' : ' 上級'} ·
-                        {d.getMonth() + 1}/{d.getDate()}
+                        {d.getMonth() + 1}月{d.getDate()}日
                       </div>
                     </div>
                     <div className="text-right">
