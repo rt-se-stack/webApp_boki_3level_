@@ -15,7 +15,7 @@ export default function QuizClient() {
   const categoryId = parseInt(params.get('categoryId') || '1');
   const difficulty = (params.get('difficulty') || 'low') as Difficulty;
 
-  const { current, index, total, results, finished, score, submitAnswer, next } = useQuiz(categoryId, difficulty, mode);
+  const { current, index, total, results, finished, score, submitAnswer, next, prev } = useQuiz(categoryId, difficulty, mode);
   const { saveSession } = useProgress();
 
   const [answered, setAnswered] = useState(false);
@@ -32,6 +32,12 @@ export default function QuizClient() {
     setAnswered(false);
     next();
   }, [next]);
+
+  const handlePrev = useCallback(() => {
+    setAnswered(false);
+    setLastCorrect(false);
+    prev();
+  }, [prev]);
 
   if (finished && !sessionSaved) {
     saveSession({ categoryId, difficulty, mode, correct: score, total: results.length, date: new Date().toISOString() });
@@ -132,13 +138,29 @@ export default function QuizClient() {
       <div className="bg-white px-5 pt-10 pb-4 shadow-sm">
         <div className="flex justify-between text-sm text-gray-500 mb-2">
           <span>問題 {index + 1} / {total}</span>
-          <button onClick={() => router.push('/')} className="text-gray-400">✕ 終了</button>
+          <button onClick={() => router.push('/')} className="text-gray-400 text-xs border border-gray-200 rounded-lg px-2 py-1">🏠 トップ</button>
         </div>
-        <div className="h-2 bg-gray-100 rounded-full">
+        <div className="h-2 bg-gray-100 rounded-full mb-3">
           <div
             className="h-2 bg-blue-600 rounded-full transition-all"
             style={{ width: `${((index) / total) * 100}%` }}
           />
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={handlePrev}
+            disabled={index === 0}
+            className="flex-1 py-2 text-sm font-medium border border-gray-200 rounded-xl text-gray-500 disabled:opacity-30 active:bg-gray-50"
+          >
+            ← 前の問題
+          </button>
+          <button
+            onClick={() => { setAnswered(false); next(); }}
+            disabled={answered || index + 1 >= total}
+            className="flex-1 py-2 text-sm font-medium border border-gray-200 rounded-xl text-gray-500 disabled:opacity-30 active:bg-gray-50"
+          >
+            次の問題 →
+          </button>
         </div>
       </div>
 

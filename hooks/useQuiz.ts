@@ -67,7 +67,14 @@ export function useQuiz(categoryId: number, difficulty: Difficulty, mode: QuizMo
     }
   }, [index, questions.length]);
 
+  const prev = useCallback(() => {
+    if (index <= 0) return;
+    const newIndex = index - 1;
+    setIndex(newIndex);
+    setResults(r => r.slice(0, newIndex));
+  }, [index]);
+
   const score = results.filter(Boolean).length;
 
-  return { current, index, total: questions.length, results, finished, score, submitAnswer, next };
+  return { current, index, total: questions.length, results, finished, score, submitAnswer, next, prev };
 }
