@@ -40,22 +40,66 @@ export default function QuizClient() {
 
   if (finished) {
     const rate = Math.round((score / results.length) * 100);
+
+    const praise = (() => {
+      const msgs = rate === 100
+        ? ['🏆 完璧！満点です！天才！', '🌟 パーフェクト！全問正解！', '👑 完璧すぎる！簿記マスター！']
+        : rate >= 80
+        ? ['🎉 素晴らしい！この調子！', '✨ すごい！かなり実力ついてきた！', '🎊 よくできました！もう合格レベル！']
+        : rate >= 60
+        ? ['😊 いい感じ！あと少しで合格圏！', '👍 惜しい！もう一息！', '💪 なかなかやるね！次はもっといける！']
+        : rate >= 40
+        ? ['📖 ここが伸びしろ！一緒に頑張ろう！', '🔥 諦めないで！繰り返せば必ず上がる！', '💡 間違えた問題が一番の教材！']
+        : ['🌱 まだまだこれから！焦らず復習しよう', '📚 一歩一歩！今日より明日が絶対伸びる！', '🤗 チャレンジした君を褒めたい！'];
+      return msgs[Math.floor(Math.random() * msgs.length)];
+    })();
+
+    const radius = 54;
+    const circ = 2 * Math.PI * radius;
+    const dash = (rate / 100) * circ;
+    const ringColor = rate >= 80 ? '#22c55e' : rate >= 60 ? '#f59e0b' : '#ef4444';
+
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-900 to-blue-700 flex flex-col">
         <div className="px-5 pt-12 pb-6 text-white">
           <h1 className="text-xl font-bold">セッション完了！</h1>
         </div>
         <div className="flex-1 bg-gray-50 rounded-t-3xl px-5 pt-8 pb-8 flex flex-col items-center">
-          <div className="text-6xl mb-4">{rate >= 80 ? '🎉' : rate >= 60 ? '😊' : '📖'}</div>
-          <div className="text-4xl font-bold text-blue-700 mb-1">{rate}%</div>
-          <div className="text-gray-500 mb-6">{score} / {results.length} 問正解</div>
-          <div className="flex gap-2 mb-8">
+
+          {/* 褒めメッセージ */}
+          <div className="w-full bg-white rounded-2xl px-5 py-4 mb-6 text-center shadow-sm border border-gray-100">
+            <p className="text-lg font-bold text-gray-800 leading-snug">{praise}</p>
+          </div>
+
+          {/* ドーナツグラフ */}
+          <div className="relative mb-4">
+            <svg width="140" height="140" viewBox="0 0 140 140">
+              <circle cx="70" cy="70" r={radius} fill="none" stroke="#e5e7eb" strokeWidth="14" />
+              <circle
+                cx="70" cy="70" r={radius} fill="none"
+                stroke={ringColor} strokeWidth="14"
+                strokeLinecap="round"
+                strokeDasharray={`${dash} ${circ}`}
+                strokeDashoffset={0}
+                transform="rotate(-90 70 70)"
+                style={{ transition: 'stroke-dasharray 1s ease' }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-3xl font-bold text-gray-800">{rate}%</span>
+              <span className="text-xs text-gray-400">{score}/{results.length}問</span>
+            </div>
+          </div>
+
+          {/* 問題ごとの○× */}
+          <div className="flex flex-wrap gap-2 justify-center mb-8 px-2">
             {results.map((r, i) => (
-              <div key={i} className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ${r ? 'bg-green-500' : 'bg-red-400'}`}>
+              <div key={i} className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${r ? 'bg-green-500' : 'bg-red-400'}`}>
                 {r ? '○' : '×'}
               </div>
             ))}
           </div>
+
           <button
             onClick={() => router.push('/')}
             className="w-full py-4 bg-blue-700 text-white rounded-2xl font-bold text-lg mb-3"

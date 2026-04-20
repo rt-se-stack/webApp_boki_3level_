@@ -53,7 +53,49 @@ export default function ResultsPage() {
           </div>
         ) : (
           <>
-            <h2 className="font-bold text-gray-700 mb-3">カテゴリ別成績</h2>
+            {/* カテゴリ別バーチャート */}
+            <h2 className="font-bold text-gray-700 mb-3">カテゴリ別 正答率チャート</h2>
+            <div className="bg-white rounded-2xl p-4 shadow-sm mb-5">
+              <div className="space-y-3">
+                {CATEGORIES.map(cat => {
+                  const allStats = (['choice', 'journal'] as const).flatMap(m =>
+                    DIFFICULTIES.map(d => getStats(cat.id, m, d.value))
+                  ).filter(Boolean) as { correct: number; total: number; rate: number }[];
+                  if (allStats.length === 0) return null;
+                  const totalC = allStats.reduce((s, x) => s + x.correct, 0);
+                  const totalT = allStats.reduce((s, x) => s + x.total, 0);
+                  const rate = Math.round((totalC / totalT) * 100);
+                  const barColor = rate >= 80 ? 'bg-green-500' : rate >= 60 ? 'bg-yellow-400' : 'bg-red-400';
+                  return (
+                    <div key={cat.id}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-gray-600 flex items-center gap-1">
+                          <span>{cat.emoji}</span>
+                          <span className="truncate max-w-[140px]">{cat.name}</span>
+                        </span>
+                        <span className={`text-xs font-bold ${rate >= 80 ? 'text-green-600' : rate >= 60 ? 'text-yellow-600' : 'text-red-500'}`}>
+                          {rate}%
+                        </span>
+                      </div>
+                      <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className={`h-3 rounded-full transition-all duration-700 ${barColor}`}
+                          style={{ width: `${rate}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex gap-4 mt-4 pt-3 border-t border-gray-100 text-xs text-gray-400">
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />80%〜</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" />60〜79%</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400 inline-block" />〜59%</span>
+              </div>
+            </div>
+
+            {/* カテゴリ別詳細 */}
+            <h2 className="font-bold text-gray-700 mb-3">カテゴリ別詳細</h2>
             <div className="space-y-3">
               {CATEGORIES.map(cat => {
                 const hasAny = ['choice', 'journal'].some(m =>
@@ -67,16 +109,21 @@ export default function ResultsPage() {
                       <span className="font-medium text-gray-800 text-sm">{cat.name}</span>
                     </div>
                     {(['choice', 'journal'] as const).map(m => (
-                      <div key={m} className="mb-2">
-                        <div className="text-xs text-gray-400 mb-1">{m === 'choice' ? '📝 選択式' : '✏️ 仕訳式'}</div>
-                        <div className="flex gap-2">
+                      <div key={m} className="mb-3">
+                        <div className="text-xs text-gray-400 mb-2">{m === 'choice' ? '📝 選択式' : '✏️ 仕訳式'}</div>
+                        <div className="space-y-1.5">
                           {DIFFICULTIES.map(d => {
                             const stats = getStats(cat.id, m, d.value);
-                            if (!stats) return <div key={d.value} className="flex-1 h-8 bg-gray-50 rounded-lg" />;
+                            if (!stats) return null;
+                            const barColor = stats.rate >= 80 ? 'bg-green-500' : stats.rate >= 60 ? 'bg-yellow-400' : 'bg-red-400';
+                            const labelColor = stats.rate >= 80 ? 'text-green-600' : stats.rate >= 60 ? 'text-yellow-600' : 'text-red-500';
                             return (
-                              <div key={d.value} className="flex-1 bg-gray-50 rounded-lg px-2 py-1 text-center">
-                                <div className={`text-xs font-bold ${d.color}`}>{d.label}</div>
-                                <div className="text-xs text-gray-600">{stats.rate}%</div>
+                              <div key={d.value} className="flex items-center gap-2">
+                                <span className={`text-xs font-bold w-4 ${d.color}`}>{d.label}</span>
+                                <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                                  <div className={`h-2.5 rounded-full ${barColor}`} style={{ width: `${stats.rate}%` }} />
+                                </div>
+                                <span className={`text-xs font-semibold w-8 text-right ${labelColor}`}>{stats.rate}%</span>
                               </div>
                             );
                           })}
